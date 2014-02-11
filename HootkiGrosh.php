@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Class HootkiGrosh
+ * @author Alex Yashkin (alexantr) <alex.yashkin@gmail.com>
+ */
 class HootkiGrosh
 {
 	private static $cookies_file; // имя файла с cookies
@@ -10,6 +14,7 @@ class HootkiGrosh
 	private $error; // ошибка запроса (если есть)
 	private $response; // тело ответа
 
+	// Список ошибок
 	private $status_error = array(
 		'3221291009' => 'Общая ошибка сервиса',
 		'3221291521' => 'Нет информации о счете',
@@ -31,6 +36,7 @@ class HootkiGrosh
 		'3221292289' => 'Общая ошибка при получении курсов валют',
 	);
 
+	// Список статусов счета
 	private $purch_item_status = array(
 		'NotSet'           => 'Не установлено',
 		'PaymentPending'   => 'Ожидание оплаты',
@@ -40,6 +46,9 @@ class HootkiGrosh
 		'Payed'            => 'Оплачен',
 	);
 
+	/**
+	 * @param bool $is_test Использовать ли тестовый api
+	 */
 	public function __construct($is_test = false)
 	{
 		if ($is_test) {
@@ -358,7 +367,7 @@ class HootkiGrosh
 		$this->ch = curl_init();
 
 		curl_setopt($this->ch, CURLOPT_URL, $this->base_url . $path);
-		curl_setopt($this->ch, CURLOPT_HEADER, false); // включение заголовков в выоде
+		curl_setopt($this->ch, CURLOPT_HEADER, false); // включение заголовков в выводе
 		curl_setopt($this->ch, CURLOPT_VERBOSE, true); // вывод доп. информации в STDERR
 		curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false); // не проверять сертификат узла сети
 		curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false); // проверка существования общего имени в сертификате SSL
