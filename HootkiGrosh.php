@@ -13,6 +13,7 @@ class HootkiGrosh
 	private $ch; // curl object
 	private $error; // ошибка запроса (если есть)
 	private $response; // тело ответа
+	private $status; // код статуса
 
 	// Список ошибок
 	private $status_error = array(
@@ -158,12 +159,12 @@ class HootkiGrosh
 			$array = $this->_responseToArray();
 
 			if (is_array($array) && isset($array['status']) && isset($array['billID'])) {
-				$status = (int)$array['status'];
+				$this->status = (int)$array['status'];
 				$billID = trim("{$array['billID']}");
 
 				// есть ошибка
-				if ($status > 0) {
-					$this->error = $this->_getStatusError($status);
+				if ($this->status > 0) {
+					$this->error = $this->_getStatusError($this->status);
 					return false;
 				}
 
@@ -193,12 +194,12 @@ class HootkiGrosh
 			$array = $this->_responseToArray();
 
 			if (is_array($array) && isset($array['status']) && isset($array['bill'])) {
-				$status = (int)$array['status'];
+				$this->status = (int)$array['status'];
 				$bill = (array)$array['bill'];
 
 				// есть ошибка
-				if ($status > 0) {
-					$this->error = $this->_getStatusError($status);
+				if ($this->status > 0) {
+					$this->error = $this->_getStatusError($this->status);
 					return false;
 				}
 
@@ -227,12 +228,12 @@ class HootkiGrosh
 			$array = $this->_responseToArray();
 
 			if (is_array($array) && isset($array['status']) && isset($array['purchItemStatus'])) {
-				$status = (int)$array['status'];
+				$this->status = (int)$array['status'];
 				$purchItemStatus = trim($array['purchItemStatus']); // статус счета
 
 				// есть ошибка
-				if ($status > 0) {
-					$this->error = $this->_getStatusError($status);
+				if ($this->status > 0) {
+					$this->error = $this->_getStatusError($this->status);
 					return false;
 				}
 
@@ -261,12 +262,12 @@ class HootkiGrosh
 			$array = $this->_responseToArray();
 
 			if (is_array($array) && isset($array['status']) && isset($array['purchItemStatus'])) {
-				$status = (int)$array['status'];
+				$this->status = (int)$array['status'];
 				$purchItemStatus = trim($array['purchItemStatus']); // статус счета
 
 				// есть ошибка
-				if ($status > 0) {
-					$this->error = $this->_getStatusError($status);
+				if ($this->status > 0) {
+					$this->error = $this->_getStatusError($this->status);
 					return false;
 				}
 
@@ -298,6 +299,16 @@ class HootkiGrosh
 	public function getResponse()
 	{
 		return $this->response;
+	}
+
+	/**
+	 * Статус ответа
+	 *
+	 * @return mixed
+	 */
+	public function getStatus()
+	{
+		return $this->status;
 	}
 
 	/**
