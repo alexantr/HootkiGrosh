@@ -6,17 +6,21 @@
  */
 class HootkiGrosh
 {
-	private static $cookies_file; // имя файла с cookies
+	private static $_cookies_file; // имя файла с cookies
 
-	private $base_url; // url api
+	private $_base_url; // url api
 
-	private $ch; // curl object
-	private $error; // ошибка запроса (если есть)
-	private $response; // тело ответа
-	private $status; // код статуса
+	private $_ch; // curl object
+	private $_error; // ошибка запроса (если есть)
+	private $_response; // тело ответа
+	private $_status; // код статуса
+
+	// api url
+	private $_api_url = 'https://www.hutkigrosh.by/API/v1/'; // рабочий
+	private $_test_api_url = 'https://trial.hgrosh.by/API/v1/'; // тестовый
 
 	// Список ошибок
-	private $status_error = array(
+	private $_status_error = array(
 		'3221291009' => 'Общая ошибка сервиса',
 		'3221291521' => 'Нет информации о счете',
 		'3221291522' => 'Нет возможности удалить счет',
@@ -38,7 +42,7 @@ class HootkiGrosh
 	);
 
 	// Список статусов счета
-	private $purch_item_status = array(
+	private $_purch_item_status = array(
 		'NotSet'           => 'Не установлено',
 		'PaymentPending'   => 'Ожидание оплаты',
 		'Outstending'      => 'Просроченный',
@@ -47,20 +51,23 @@ class HootkiGrosh
 		'Payed'            => 'Оплачен',
 	);
 
+	// Доступные валюты
+	private $_currencies = array('BYR', 'USD', 'EUR', 'RUB');
+
 	/**
 	 * @param bool $is_test Использовать ли тестовый api
 	 */
 	public function __construct($is_test = false)
 	{
 		if ($is_test) {
-			$this->base_url = 'https://trial.hgrosh.by/API/v1/';
+			$this->_base_url = $this->_test_api_url;
 		}
 		else {
-			$this->base_url = 'https://www.hutkigrosh.by/API/v1/';
+			$this->_base_url = $this->_api_url;
 		}
 
-		if (!isset(self::$cookies_file)) {
-			self::$cookies_file = 'cookies-' . time() . '.txt';
+		if (!isset(self::$_cookies_file)) {
+			self::$_cookies_file = 'cookies-' . time() . '.txt';
 		}
 	}
 
@@ -86,8 +93,8 @@ class HootkiGrosh
 		$res = $this->_requestPost('Security/LogIn', $xml);
 
 		// проверим, верны ли логин/пароль
-		if ($res && !preg_match('/true/', $this->response)) {
-			$this->error = 'Ошибка авторизации';
+		if ($res && !preg_match('/true/', $this->_response)) {
+			$this->_error = 'Ошибка авторизации';
 			return false;
 		}
 
@@ -102,8 +109,8 @@ class HootkiGrosh
 	{
 		$res = $this->_requestPost('Security/LogOut');
 		// удалим файл с cookies
-		if (is_file(self::$cookies_file)) {
-			@unlink(self::$cookies_file);
+		if (is_file(self::$_cookies_file)) {
+			@unlink(self::$_cookies_file);
 		}
 		return $res;
 	}
@@ -117,6 +124,11 @@ class HootkiGrosh
 	 */
 	public function apiBillNew($data)
 	{
+		// выберем валюту
+		$curr = isset($data['curr']) ? trim($data['curr']) : 'BYR';
+		if (!in_array($curr, $this->_currencies))
+			$curr = $this->_currencies[0];
+
 		// формируем xml
 		$Bill = new SimpleXMLElement("<Bill></Bill>");
 		$Bill->addAttribute('xmlns', 'http://www.hutkigrosh.by/api/invoicing');
@@ -134,7 +146,7 @@ class HootkiGrosh
 			$Bill->addChild('fullAddress', trim($data['fullAddress'])); // опционально
 		if (isset($data['amt']))
 			$Bill->addChild('amt', (float)$data['amt']); // опционально
-		$Bill->addChild('curr', 'BYR');
+		$Bill->addChild('curr', $curr);
 		$Bill->addChild('statusEnum', 'NotSet');
 		// Список товаров/услуг
 		if (isset($data['products']) && !empty($data['products'])) {
@@ -159,19 +171,19 @@ class HootkiGrosh
 			$array = $this->_responseToArray();
 
 			if (is_array($array) && isset($array['status']) && isset($array['billID'])) {
-				$this->status = (int)$array['status'];
+				$this->_status = (int)$array['status'];
 				$billID = trim("{$array['billID']}");
 
 				// есть ошибка
-				if ($this->status > 0) {
-					$this->error = $this->_getStatusError($this->status);
+				if ($this->_status > 0) {
+					$this->_error = $this->_getStatusError($this->_status);
 					return false;
 				}
 
 				return $billID;
 			}
 			else {
-				$this->error = 'Неверный ответ сервера';
+				$this->_error = 'Неверный ответ сервера';
 			}
 		}
 
@@ -194,19 +206,19 @@ class HootkiGrosh
 			$array = $this->_responseToArray();
 
 			if (is_array($array) && isset($array['status']) && isset($array['bill'])) {
-				$this->status = (int)$array['status'];
+				$this->_status = (int)$array['status'];
 				$bill = (array)$array['bill'];
 
 				// есть ошибка
-				if ($this->status > 0) {
-					$this->error = $this->_getStatusError($this->status);
+				if ($this->_status > 0) {
+					$this->_error = $this->_getStatusError($this->_status);
 					return false;
 				}
 
 				return $bill;
 			}
 			else {
-				$this->error = 'Неверный ответ сервера';
+				$this->_error = 'Неверный ответ сервера';
 			}
 		}
 
@@ -228,19 +240,19 @@ class HootkiGrosh
 			$array = $this->_responseToArray();
 
 			if (is_array($array) && isset($array['status']) && isset($array['purchItemStatus'])) {
-				$this->status = (int)$array['status'];
+				$this->_status = (int)$array['status'];
 				$purchItemStatus = trim($array['purchItemStatus']); // статус счета
 
 				// есть ошибка
-				if ($this->status > 0) {
-					$this->error = $this->_getStatusError($this->status);
+				if ($this->_status > 0) {
+					$this->_error = $this->_getStatusError($this->_status);
 					return false;
 				}
 
 				return $purchItemStatus;
 			}
 			else {
-				$this->error = 'Неверный ответ сервера';
+				$this->_error = 'Неверный ответ сервера';
 			}
 		}
 
@@ -262,19 +274,19 @@ class HootkiGrosh
 			$array = $this->_responseToArray();
 
 			if (is_array($array) && isset($array['status']) && isset($array['purchItemStatus'])) {
-				$this->status = (int)$array['status'];
+				$this->_status = (int)$array['status'];
 				$purchItemStatus = trim($array['purchItemStatus']); // статус счета
 
 				// есть ошибка
-				if ($this->status > 0) {
-					$this->error = $this->_getStatusError($this->status);
+				if ($this->_status > 0) {
+					$this->_error = $this->_getStatusError($this->_status);
 					return false;
 				}
 
 				return $purchItemStatus;
 			}
 			else {
-				$this->error = 'Неверный ответ сервера';
+				$this->_error = 'Неверный ответ сервера';
 			}
 		}
 
@@ -288,7 +300,7 @@ class HootkiGrosh
 	 */
 	public function getError()
 	{
-		return $this->error;
+		return $this->_error;
 	}
 
 	/**
@@ -298,7 +310,7 @@ class HootkiGrosh
 	 */
 	public function getResponse()
 	{
-		return $this->response;
+		return $this->_response;
 	}
 
 	/**
@@ -308,7 +320,7 @@ class HootkiGrosh
 	 */
 	public function getStatus()
 	{
-		return $this->status;
+		return $this->_status;
 	}
 
 	/**
@@ -320,7 +332,7 @@ class HootkiGrosh
 	 */
 	public function getPurchItemStatus($status)
 	{
-		return (isset($this->purch_item_status[$status])) ? $this->purch_item_status[$status] : 'Статус не определен';
+		return (isset($this->_purch_item_status[$status])) ? $this->_purch_item_status[$status] : 'Статус не определен';
 	}
 
 	/**
@@ -375,38 +387,38 @@ class HootkiGrosh
 	{
 		$headers = array('Content-Type: application/xml', 'Content-Length: ' . strlen($data));
 
-		$this->ch = curl_init();
+		$this->_ch = curl_init();
 
-		curl_setopt($this->ch, CURLOPT_URL, $this->base_url . $path);
-		curl_setopt($this->ch, CURLOPT_HEADER, false); // включение заголовков в выводе
-		curl_setopt($this->ch, CURLOPT_VERBOSE, true); // вывод доп. информации в STDERR
-		curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false); // не проверять сертификат узла сети
-		curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false); // проверка существования общего имени в сертификате SSL
-		curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true); // возврат результата вместо вывода на экран
-		curl_setopt($this->ch, CURLOPT_HTTPHEADER, $headers); // Массив устанавливаемых HTTP-заголовков
+		curl_setopt($this->_ch, CURLOPT_URL, $this->_base_url . $path);
+		curl_setopt($this->_ch, CURLOPT_HEADER, false); // включение заголовков в выводе
+		curl_setopt($this->_ch, CURLOPT_VERBOSE, true); // вывод доп. информации в STDERR
+		curl_setopt($this->_ch, CURLOPT_SSL_VERIFYPEER, false); // не проверять сертификат узла сети
+		curl_setopt($this->_ch, CURLOPT_SSL_VERIFYHOST, false); // проверка существования общего имени в сертификате SSL
+		curl_setopt($this->_ch, CURLOPT_RETURNTRANSFER, true); // возврат результата вместо вывода на экран
+		curl_setopt($this->_ch, CURLOPT_HTTPHEADER, $headers); // Массив устанавливаемых HTTP-заголовков
 		if ($request == 'POST') {
-			curl_setopt($this->ch, CURLOPT_POST, true);
-			curl_setopt($this->ch, CURLOPT_POSTFIELDS, $data);
+			curl_setopt($this->_ch, CURLOPT_POST, true);
+			curl_setopt($this->_ch, CURLOPT_POSTFIELDS, $data);
 		}
 		if ($request == 'DELETE') {
-			curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+			curl_setopt($this->_ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 		}
 
 		// если файла еще нет, то создадим его при залогинивании и будем затем использовать при дальнейших запросах
-		if (!is_file(self::$cookies_file)) {
-			curl_setopt($this->ch, CURLOPT_COOKIEJAR, self::$cookies_file);
+		if (!is_file(self::$_cookies_file)) {
+			curl_setopt($this->_ch, CURLOPT_COOKIEJAR, self::$_cookies_file);
 		}
-		curl_setopt($this->ch, CURLOPT_COOKIEFILE, self::$cookies_file);
+		curl_setopt($this->_ch, CURLOPT_COOKIEFILE, self::$_cookies_file);
 
-		$this->response = curl_exec($this->ch);
+		$this->_response = curl_exec($this->_ch);
 
-		if (curl_errno($this->ch)) {
-			$this->error = curl_error($this->ch);
-			curl_close($this->ch);
+		if (curl_errno($this->_ch)) {
+			$this->_error = curl_error($this->_ch);
+			curl_close($this->_ch);
 			return false;
 		}
 		else {
-			curl_close($this->ch);
+			curl_close($this->_ch);
 			return true;
 		}
 	}
@@ -418,7 +430,7 @@ class HootkiGrosh
 	 */
 	private function _responseToArray()
 	{
-		$response = trim($this->response);
+		$response = trim($this->_response);
 		$array = array();
 		// проверим, что это xml
 		if (preg_match('/^<(.*)>$/', $response)) {
@@ -437,7 +449,7 @@ class HootkiGrosh
 	 */
 	private function _getStatusError($status)
 	{
-		return (isset($this->status_error[$status])) ? $this->status_error[$status] : 'Неизвестная ошибка';
+		return (isset($this->_status_error[$status])) ? $this->_status_error[$status] : 'Неизвестная ошибка';
 	}
 
 }
