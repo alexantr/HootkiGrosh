@@ -1,0 +1,26 @@
+{
+    "name": "alexantr/hootkigrosh",
+    "type": "library",
+    "description": "Working with Hutki Grosh API (www.hutkigrosh.by)",
+    "keywords": ["hootkigrosh", "hutkigrosh", "payments", "api"],
+    "homepage": "https://github.com/alexantr/HootkiGrosh",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alex Yashkin",
+            "homepage": "http://yashkin.by/"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "psr-4": { "Alexantr\\HootkiGrosh\\": "src" }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}
