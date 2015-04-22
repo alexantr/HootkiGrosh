@@ -4,6 +4,14 @@
 
 [Подробное описание API (pdf)](http://hutkigrosh.by/Docs/API%20сервиса%20Хуткi%20Грош.ru.pdf)
 
+## Установка
+
+Установка через [Composer](http://getcomposer.org/):
+
+```
+composer require alexantr/hootkigrosh "~1.0@dev"
+```
+
 ## Пример использования
 
 Инициализация:
