@@ -9,7 +9,7 @@ namespace Alexantr\HootkiGrosh;
  */
 class HootkiGrosh
 {
-    private static $cookies_file; // имя файла с cookies
+    private static $cookies_file;
 
     private $base_url; // url api
 
@@ -17,6 +17,8 @@ class HootkiGrosh
     private $error; // ошибка запроса (если есть)
     private $response; // тело ответа
     private $status; // код статуса
+
+    private $cookies_dir;
 
     // api url
     private $api_url = 'https://www.hutkigrosh.by/API/v1/'; // рабочий
@@ -71,6 +73,23 @@ class HootkiGrosh
         if (!isset(self::$cookies_file)) {
             self::$cookies_file = 'cookies-' . time() . '.txt';
         }
+
+        $this->setCookiesDir(dirname(__FILE__));
+    }
+
+    /**
+     * Задать путь к папке, где будет находиться файл cookies
+     *
+     * @param string $dir
+     */
+    public function setCookiesDir($dir)
+    {
+        $dir = rtrim($dir, '\\/');
+        if (is_dir($dir)) {
+            $this->cookies_dir = $dir;
+        } else {
+            $this->cookies_dir = dirname(__FILE__);
+        }
     }
 
     /**
@@ -111,8 +130,9 @@ class HootkiGrosh
     {
         $res = $this->requestPost('Security/LogOut');
         // удалим файл с cookies
-        if (is_file(self::$cookies_file)) {
-            @unlink(self::$cookies_file);
+        $cookies_path = $this->cookies_dir . DIRECTORY_SEPARATOR . self::$cookies_file;
+        if (is_file($cookies_path)) {
+            @unlink($cookies_path);
         }
         return $res;
     }
@@ -408,11 +428,13 @@ class HootkiGrosh
             curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
         }
 
+        $cookies_path = $this->cookies_dir . DIRECTORY_SEPARATOR . self::$cookies_file;
+
         // если файла еще нет, то создадим его при залогинивании и будем затем использовать при дальнейших запросах
-        if (!is_file(self::$cookies_file)) {
-            curl_setopt($this->ch, CURLOPT_COOKIEJAR, self::$cookies_file);
+        if (!is_file($cookies_path)) {
+            curl_setopt($this->ch, CURLOPT_COOKIEJAR, $cookies_path);
         }
-        curl_setopt($this->ch, CURLOPT_COOKIEFILE, self::$cookies_file);
+        curl_setopt($this->ch, CURLOPT_COOKIEFILE, $cookies_path);
 
         $this->response = curl_exec($this->ch);
 
