@@ -3,9 +3,10 @@
 namespace Alexantr\HootkiGrosh;
 
 /**
- * HootkiGrosh class
+ * HootkiGrosh Class
  *
- * @author Alex Yashkin <alex.yashkin@gmail.com>
+ * @author Alex Yashkin <alex@yashkin.by>
+ * @link https://github.com/alexantr/HootkiGrosh
  */
 class HootkiGrosh
 {
@@ -44,6 +45,15 @@ class HootkiGrosh
         '3221292035' => 'Не определены курсы валют поставщика услуг',
         '3221292036' => 'Не установлен режим пересчета курсов валют',
         '3221292289' => 'Общая ошибка при получении курсов валют',
+        '3221292801' => 'В запросе отсутствуют параметры',
+        '3221292802' => 'Поле billId не заполнен',
+        '3221292803' => 'Нет url для перенаправления в случае успешной оплаты',
+        '3221292804' => 'Нет url для перенаправления в случае ошибки или отмены оплаты',
+        '3221292806' => 'Счет не найден в системе',
+        '3221292807' => 'Поставщик услуг не найден в системе',
+        '3221292808' => 'Услуга не полностью сконфигурирована',
+        '3221292809' => 'Нет номера услуги на платежном сайте в настройках',
+        '3221292810' => 'Счет оплачен ранее',
     );
 
     // Список статусов счета
@@ -71,10 +81,10 @@ class HootkiGrosh
         }
 
         if (!isset(self::$cookies_file)) {
-            self::$cookies_file = 'cookies-' . time() . '.txt';
+            self::$cookies_file = 'hg-cookies-' . time() . '.txt';
         }
 
-        $this->setCookiesDir(dirname(__FILE__));
+        $this->setCookiesDir(sys_get_temp_dir());
     }
 
     /**
@@ -88,7 +98,7 @@ class HootkiGrosh
         if (is_dir($dir)) {
             $this->cookies_dir = $dir;
         } else {
-            $this->cookies_dir = dirname(__FILE__);
+            $this->cookies_dir = sys_get_temp_dir();
         }
     }
 

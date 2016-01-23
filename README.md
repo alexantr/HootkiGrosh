@@ -1,15 +1,15 @@
 # HootkiGrosh
 
-Класс для работы с API сервиса «Хуткi Грош»
+Класс для работы с API сервиса «[Хуткi Грош](http://hutkigrosh.by/)»
 
-[Подробное описание API (pdf)](http://hutkigrosh.by/Docs/API%20сервиса%20Хуткi%20Грош.ru.pdf)
+[Описание API](http://hutkigrosh.by/ru/API)
 
 ## Установка
 
 Установка через [Composer](http://getcomposer.org/):
 
 ```
-composer require alexantr/hootkigrosh "~1.0@dev"
+composer require alexantr/hootkigrosh "~1.0"
 ```
 
 ## Пример использования
