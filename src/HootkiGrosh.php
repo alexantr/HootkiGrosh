@@ -67,7 +67,7 @@ class HootkiGrosh
     );
 
     // Доступные валюты
-    private $currencies = array('BYR', 'USD', 'EUR', 'RUB');
+    private $currencies = array('BYN', 'USD', 'EUR', 'RUB');
 
     /**
      * @param bool $is_test Использовать ли тестовый api
@@ -157,7 +157,7 @@ class HootkiGrosh
     public function apiBillNew($data)
     {
         // выберем валюту
-        $curr = isset($data['curr']) ? trim($data['curr']) : 'BYR';
+        $curr = isset($data['curr']) ? trim($data['curr']) : 'BYN';
         if (!in_array($curr, $this->currencies)) {
             $curr = $this->currencies[0];
         }
