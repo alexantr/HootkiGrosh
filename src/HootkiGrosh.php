@@ -454,17 +454,20 @@ class HootkiGrosh
      */
     private function connect($path, $data = '', $request = 'GET')
     {
-        $headers = array('Content-Type: application/xml', 'Content-Length: ' . strlen($data));
+        $headers = array(
+            'Content-Type: application/xml',
+            'Content-Length: ' . (function_exists('mb_strlen') ? mb_strlen($data, '8bit') : strlen($data)),
+        );
 
         $this->ch = curl_init();
 
         curl_setopt($this->ch, CURLOPT_URL, $this->base_url . $path);
-        curl_setopt($this->ch, CURLOPT_HEADER, false); // включение заголовков в выводе
-        curl_setopt($this->ch, CURLOPT_VERBOSE, false); // вывод доп. информации в STDERR
-        curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false); // не проверять сертификат узла сети
-        curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false); // проверка существования общего имени в сертификате SSL
-        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true); // возврат результата вместо вывода на экран
-        curl_setopt($this->ch, CURLOPT_HTTPHEADER, $headers); // Массив устанавливаемых HTTP-заголовков
+        curl_setopt($this->ch, CURLOPT_HEADER, false);
+        curl_setopt($this->ch, CURLOPT_VERBOSE, false);
+        curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($this->ch, CURLOPT_HTTPHEADER, $headers);
         if ($request == 'POST') {
             curl_setopt($this->ch, CURLOPT_POST, true);
             curl_setopt($this->ch, CURLOPT_POSTFIELDS, $data);
