@@ -328,6 +328,41 @@ class HootkiGrosh
     }
 
     /**
+     * Получение списка всех платежей
+     *
+     * @param int $erip_id
+     * @param string $last_bill_id
+     *
+     * @return bool|array
+     */
+    public function apiPayedBills($erip_id, $last_bill_id)
+    {
+        // запрос
+        $res = $this->requestGet("Invoicing/PayedBills({$erip_id},{$last_bill_id})");
+
+        if ($res) {
+            $array = $this->responseToArray();
+
+            if (is_array($array) && isset($array['status']) && isset($array['bill'])) {
+                $this->status = (int)$array['status'];
+                $bills = (array)$array['bill'];
+
+                // есть ошибка
+                if ($this->status > 0) {
+                    $this->error = $this->getStatusError($this->status);
+                    return false;
+                }
+
+                return $bills;
+            } else {
+                $this->error = 'Неверный ответ сервера';
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Получить текст ошибки
      *
      * @return string
@@ -425,7 +460,7 @@ class HootkiGrosh
 
         curl_setopt($this->ch, CURLOPT_URL, $this->base_url . $path);
         curl_setopt($this->ch, CURLOPT_HEADER, false); // включение заголовков в выводе
-        curl_setopt($this->ch, CURLOPT_VERBOSE, true); // вывод доп. информации в STDERR
+        curl_setopt($this->ch, CURLOPT_VERBOSE, false); // вывод доп. информации в STDERR
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false); // не проверять сертификат узла сети
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false); // проверка существования общего имени в сертификате SSL
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true); // возврат результата вместо вывода на экран

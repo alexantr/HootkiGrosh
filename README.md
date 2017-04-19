@@ -110,6 +110,18 @@ if (!$res) {
 }
 ```
 
+Список последних платежей:
+
+```php
+$info = $hg->apiPayedBills($eripID, $lastBillID);
+if (!$info) {
+    echo $hg->getError();
+    $hg->apiLogOut(); // Завершаем сеанс
+    exit;
+}
+echo '<pre>' . print_r($info, true) . '</pre>';
+```
+
 Дамп ответа:
 
 ```php
