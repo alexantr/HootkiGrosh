@@ -260,7 +260,7 @@ class HootkiGrosh
 
             if (is_array($array) && isset($array['status']) && isset($array['billID'])) {
                 $this->status = (int)$array['status'];
-                $billID = trim("{$array['billID']}");
+                $billID = trim($array['billID']);
 
                 // есть ошибка
                 if ($this->status > 0) {
