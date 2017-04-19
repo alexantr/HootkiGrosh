@@ -10,23 +10,55 @@ namespace Alexantr\HootkiGrosh;
  */
 class HootkiGrosh
 {
-    private static $cookies_file;
+    /**
+     * @var string
+     */
+    protected static $cookies_file;
 
-    private $base_url; // url api
+    /**
+     * @var string url api
+     */
+    protected $base_url;
 
-    private $ch; // curl object
-    private $error; // ошибка запроса (если есть)
-    private $response; // тело ответа
-    private $status; // код статуса
+    /**
+     * @var resource curl handle
+     */
+    protected $ch;
 
-    private $cookies_dir;
+    /**
+     * @var string ошибка запроса (если есть)
+     */
+    protected $error;
 
-    // api url
-    private $api_url = 'https://www.hutkigrosh.by/API/v1/'; // рабочий
-    private $test_api_url = 'https://trial.hgrosh.by/API/v1/'; // тестовый
+    /**
+     * @var string тело ответа
+     */
+    protected $response;
 
-    // Список ошибок
-    private $status_error = array(
+    /**
+     * @var int код статуса
+     */
+    protected $status;
+
+    /**
+     * @var string временная папка с файлами cookies
+     */
+    protected $cookies_dir;
+
+    /**
+     * @var string рабочий api url
+     */
+    protected $api_url = 'https://www.hutkigrosh.by/API/v1/';
+
+    /**
+     * @var string тестовый api url
+     */
+    protected $test_api_url = 'https://trial.hgrosh.by/API/v1/';
+
+    /**
+     * @var array Список ошибок
+     */
+    protected $status_error = array(
         '3221291009' => 'Общая ошибка сервиса',
         '3221291521' => 'Нет информации о счете',
         '3221291522' => 'Нет возможности удалить счет',
@@ -56,8 +88,10 @@ class HootkiGrosh
         '3221292810' => 'Счет оплачен ранее',
     );
 
-    // Список статусов счета
-    private $purch_item_status = array(
+    /**
+     * @var array Список статусов счета
+     */
+    protected $purch_item_status = array(
         'NotSet' => 'Не установлено',
         'PaymentPending' => 'Ожидание оплаты',
         'Outstending' => 'Просроченный',
@@ -66,8 +100,10 @@ class HootkiGrosh
         'Payed' => 'Оплачен',
     );
 
-    // Доступные валюты
-    private $currencies = array('BYN', 'USD', 'EUR', 'RUB');
+    /**
+     * @var array Доступные валюты
+     */
+    protected $currencies = array('BYN', 'USD', 'EUR', 'RUB');
 
     /**
      * @param bool $is_test Использовать ли тестовый api
@@ -412,7 +448,7 @@ class HootkiGrosh
      *
      * @return bool
      */
-    private function requestGet($path, $data = '')
+    protected function requestGet($path, $data = '')
     {
         return $this->connect($path, $data, 'GET');
     }
@@ -425,7 +461,7 @@ class HootkiGrosh
      *
      * @return bool
      */
-    private function requestPost($path, $data = '')
+    protected function requestPost($path, $data = '')
     {
         return $this->connect($path, $data, 'POST');
     }
@@ -438,7 +474,7 @@ class HootkiGrosh
      *
      * @return bool
      */
-    private function requestDelete($path, $data = '')
+    protected function requestDelete($path, $data = '')
     {
         return $this->connect($path, $data, 'DELETE');
     }
@@ -452,7 +488,7 @@ class HootkiGrosh
      *
      * @return bool
      */
-    private function connect($path, $data = '', $request = 'GET')
+    protected function connect($path, $data = '', $request = 'GET')
     {
         $headers = array(
             'Content-Type: application/xml',
@@ -501,7 +537,7 @@ class HootkiGrosh
      *
      * @return mixed
      */
-    private function responseToArray()
+    protected function responseToArray()
     {
         $response = trim($this->response);
         $array = array();
@@ -520,7 +556,7 @@ class HootkiGrosh
      *
      * @return string
      */
-    private function getStatusError($status)
+    protected function getStatusError($status)
     {
         return (isset($this->status_error[$status])) ? $this->status_error[$status] : 'Неизвестная ошибка';
     }
