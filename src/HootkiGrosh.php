@@ -4,7 +4,6 @@ namespace Alexantr\HootkiGrosh;
 
 /**
  * HootkiGrosh Class
- *
  * @author Alex Yashkin <alex@yashkin.by>
  * @link https://github.com/alexantr/HootkiGrosh
  */
@@ -16,42 +15,42 @@ class HootkiGrosh
     protected static $cookies_file;
 
     /**
-     * @var string url api
+     * @var string URL API
      */
     protected $base_url;
 
     /**
-     * @var resource curl handle
+     * @var resource cURL handle
      */
     protected $ch;
 
     /**
-     * @var string ошибка запроса (если есть)
+     * @var string Ошибка запроса (если есть)
      */
     protected $error;
 
     /**
-     * @var string тело ответа
+     * @var string Тело ответа
      */
     protected $response;
 
     /**
-     * @var int код статуса
+     * @var int Код статуса
      */
     protected $status;
 
     /**
-     * @var string временная папка с файлами cookies
+     * @var string Временная папка с файлами cookies
      */
     protected $cookies_dir;
 
     /**
-     * @var string рабочий api url
+     * @var string Рабочий api url
      */
     protected $api_url = 'https://www.hutkigrosh.by/API/v1/';
 
     /**
-     * @var string тестовый api url
+     * @var string Тестовый api url
      */
     protected $test_api_url = 'https://trial.hgrosh.by/API/v1/';
 
@@ -106,6 +105,26 @@ class HootkiGrosh
     protected $currencies = array('BYN', 'USD', 'EUR', 'RUB');
 
     /**
+     * @var string Валюта по умолчанию (для нового счета)
+     */
+    protected $default_currency = 'BYN';
+
+    /**
+     * @var string Текст для неизвестного статуса счета
+     */
+    protected $unknown_status_text = 'Статус не определен';
+
+    /**
+     * @var string Текст для ошибки неверного ответа сервера
+     */
+    protected $response_error_text = 'Неверный ответ сервера';
+
+    /**
+     * @var string Текст для неизвестного статуса ошибки ответа
+     */
+    protected $unknown_status_error_text = 'Неизвестная ошибка';
+
+    /**
      * @param bool $is_test Использовать ли тестовый api
      */
     public function __construct($is_test = false)
@@ -125,7 +144,6 @@ class HootkiGrosh
 
     /**
      * Задать путь к папке, где будет находиться файл cookies
-     *
      * @param string $dir
      */
     public function setCookiesDir($dir)
@@ -140,16 +158,14 @@ class HootkiGrosh
 
     /**
      * Аутентифицирует пользователя в системе
-     *
      * @param string $user
      * @param string $pwd
-     *
      * @return bool
      */
     public function apiLogIn($user, $pwd)
     {
         // формируем xml
-        $Credentials = new \SimpleXMLElement("<Credentials></Credentials>");
+        $Credentials = new \SimpleXMLElement('<Credentials></Credentials>');
         $Credentials->addAttribute('xmlns', 'http://www.hutkigrosh.by/api');
         $Credentials->addChild('user', trim($user));
         $Credentials->addChild('pwd', trim($pwd));
@@ -185,21 +201,19 @@ class HootkiGrosh
 
     /**
      * Добавляет новый счет в систему
-     *
      * @param array $data
-     *
      * @return bool|string
      */
     public function apiBillNew($data)
     {
         // выберем валюту
-        $curr = isset($data['curr']) ? trim($data['curr']) : 'BYN';
+        $curr = isset($data['curr']) ? trim($data['curr']) : $this->default_currency;
         if (!in_array($curr, $this->currencies)) {
             $curr = $this->currencies[0];
         }
 
         // формируем xml
-        $Bill = new \SimpleXMLElement("<Bill></Bill>");
+        $Bill = new \SimpleXMLElement('<Bill></Bill>');
         $Bill->addAttribute('xmlns', 'http://www.hutkigrosh.by/api/invoicing');
         $Bill->addChild('eripId', trim($data['eripId']));
         $Bill->addChild('invId', trim($data['invId']));
@@ -256,7 +270,7 @@ class HootkiGrosh
 
                 return $billID;
             } else {
-                $this->error = 'Неверный ответ сервера';
+                $this->error = $this->response_error_text;
             }
         }
 
@@ -265,15 +279,13 @@ class HootkiGrosh
 
     /**
      * Извлекает информацию о выставленном счете
-     *
      * @param string $bill_id
-     *
      * @return bool|array
      */
     public function apiBillInfo($bill_id)
     {
         // запрос
-        $res = $this->requestGet('Invoicing/Bill(' . $bill_id . ')');
+        $res = $this->requestGet("Invoicing/Bill({$bill_id})");
 
         if ($res) {
             $array = $this->responseToArray();
@@ -290,7 +302,7 @@ class HootkiGrosh
 
                 return $bill;
             } else {
-                $this->error = 'Неверный ответ сервера';
+                $this->error = $this->response_error_text;
             }
         }
 
@@ -299,14 +311,12 @@ class HootkiGrosh
 
     /**
      * Удаляет выставленный счет из системы
-     *
      * @param string $bill_id
-     *
      * @return bool|mixed
      */
     public function apiBillDelete($bill_id)
     {
-        $res = $this->requestDelete('Invoicing/Bill(' . $bill_id . ')');
+        $res = $this->requestDelete("Invoicing/Bill({$bill_id})");
 
         if ($res) {
             $array = $this->responseToArray();
@@ -323,7 +333,7 @@ class HootkiGrosh
 
                 return $purchItemStatus;
             } else {
-                $this->error = 'Неверный ответ сервера';
+                $this->error = $this->response_error_text;
             }
         }
 
@@ -332,14 +342,12 @@ class HootkiGrosh
 
     /**
      * Возвращает статус указанного счета
-     *
      * @param string $bill_id
-     *
      * @return bool|mixed
      */
     public function apiBillStatus($bill_id)
     {
-        $res = $this->requestGet('Invoicing/BillStatus(' . $bill_id . ')');
+        $res = $this->requestGet("Invoicing/BillStatus({$bill_id})");
 
         if ($res) {
             $array = $this->responseToArray();
@@ -356,7 +364,7 @@ class HootkiGrosh
 
                 return $purchItemStatus;
             } else {
-                $this->error = 'Неверный ответ сервера';
+                $this->error = $this->response_error_text;
             }
         }
 
@@ -365,10 +373,8 @@ class HootkiGrosh
 
     /**
      * Получение списка всех платежей
-     *
      * @param int $erip_id
      * @param string $last_bill_id
-     *
      * @return bool|array
      */
     public function apiPayedBills($erip_id, $last_bill_id)
@@ -391,7 +397,7 @@ class HootkiGrosh
 
                 return $bills;
             } else {
-                $this->error = 'Неверный ответ сервера';
+                $this->error = $this->response_error_text;
             }
         }
 
@@ -400,7 +406,6 @@ class HootkiGrosh
 
     /**
      * Получить текст ошибки
-     *
      * @return string
      */
     public function getError()
@@ -410,7 +415,6 @@ class HootkiGrosh
 
     /**
      * Ответ сервера в исходном виде
-     *
      * @return mixed
      */
     public function getResponse()
@@ -420,7 +424,6 @@ class HootkiGrosh
 
     /**
      * Статус ответа
-     *
      * @return mixed
      */
     public function getStatus()
@@ -430,22 +433,18 @@ class HootkiGrosh
 
     /**
      * Статус счета
-     *
      * @param string $status
-     *
      * @return string
      */
     public function getPurchItemStatus($status)
     {
-        return (isset($this->purch_item_status[$status])) ? $this->purch_item_status[$status] : 'Статус не определен';
+        return (isset($this->purch_item_status[$status])) ? $this->purch_item_status[$status] : $this->unknown_status_text;
     }
 
     /**
      * Подключение GET
-     *
      * @param string $path
      * @param string $data
-     *
      * @return bool
      */
     protected function requestGet($path, $data = '')
@@ -455,10 +454,8 @@ class HootkiGrosh
 
     /**
      * Подключение POST
-     *
      * @param string $path
      * @param string $data
-     *
      * @return bool
      */
     protected function requestPost($path, $data = '')
@@ -468,10 +465,8 @@ class HootkiGrosh
 
     /**
      * Подключение DELETE
-     *
      * @param string $path
      * @param string $data
-     *
      * @return bool
      */
     protected function requestDelete($path, $data = '')
@@ -481,11 +476,9 @@ class HootkiGrosh
 
     /**
      * Подключение GET, POST или DELETE
-     *
      * @param string $path
      * @param string $data Сформированный для отправки XML
      * @param string $request
-     *
      * @return bool
      */
     protected function connect($path, $data = '', $request = 'GET')
@@ -534,7 +527,6 @@ class HootkiGrosh
 
     /**
      * Преобразуем XML в массив
-     *
      * @return mixed
      */
     protected function responseToArray()
@@ -551,13 +543,11 @@ class HootkiGrosh
 
     /**
      * Описание ошибки на основе ее кода в ответе
-     *
      * @param string $status
-     *
      * @return string
      */
     protected function getStatusError($status)
     {
-        return (isset($this->status_error[$status])) ? $this->status_error[$status] : 'Неизвестная ошибка';
+        return (isset($this->status_error[$status])) ? $this->status_error[$status] : $this->unknown_status_error_text;
     }
 }
