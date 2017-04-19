@@ -136,7 +136,7 @@ class HootkiGrosh
         }
 
         if (!isset(self::$cookies_file)) {
-            self::$cookies_file = 'hg-cookies-' . time() . '.txt';
+            self::$cookies_file = 'hg-cookies-' . uniqid() . '.txt';
         }
 
         $this->setCookiesDir(sys_get_temp_dir());
