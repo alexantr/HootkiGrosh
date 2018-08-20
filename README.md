@@ -1,8 +1,8 @@
 # HootkiGrosh
 
-Класс для работы с API сервиса «[Хуткi Грош](http://hutkigrosh.by/)»
+Класс для работы с API сервиса «[Хуткі Грош](https://www.hutkigrosh.by/)»
 
-[Описание API](http://hutkigrosh.by/ru/API)
+[Описание API](https://www.hutkigrosh.by/wp-content/uploads/2017/03/API-servisa-Hutki-Grosh.ru_.pdf)
 
 ## Установка
 
